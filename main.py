@@ -6,16 +6,19 @@ from pydantic import HttpUrl
 from schemas.request import PredictionRequest, PredictionResponse
 from utils.logger import setup_logger
 from src.services.llm_service import process_request
+from src.services.google_mistral_service import GoogleMistralService
 
 # Initialize
 app = FastAPI(title="ITMO University AI Agent")
 logger = None
+google_mistral_service = None
 
 
 @app.on_event("startup")
 async def startup_event():
-    global logger
+    global logger, google_mistral_service
     logger = await setup_logger()
+    google_mistral_service = GoogleMistralService()
 
 
 @app.middleware("http")
@@ -49,7 +52,7 @@ async def log_requests(request: Request, call_next):
         media_type=response.media_type,
     )
 
-@app.post("/api/request", response_model=PredictionResponse)
+@app.post("/api/google-mistral", response_model=PredictionResponse)
 async def predict(body: PredictionRequest):
     """
     Process a query about ITMO University using an AI agent.
@@ -80,4 +83,37 @@ async def predict(body: PredictionRequest):
         raise HTTPException(status_code=400, detail=error_msg)
     except Exception as e:
         await logger.error(f"Internal error processing request {body.id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@app.post("/api/request", response_model=PredictionResponse)
+async def predict_google_mistral(body: PredictionRequest):
+    """
+    Process a query about ITMO University using Google Search and MistralAI.
+    
+    The endpoint will:
+    1. Validate the query and extract questions in both languages
+    2. Search Google for relevant information
+    3. Use MistralAI to generate a comprehensive response
+    """
+    try:
+        await logger.info(f"Processing google-mistral request with id: {body.id}")
+        
+        result = await google_mistral_service.process_request(body.query, str(body.id))
+
+        response = PredictionResponse(
+            id=body.id,
+            answer=result["answer"],
+            reasoning=result["reasoning"],
+            sources=[HttpUrl(url) for url in result["sources"][:3]]
+        )
+
+        await logger.info(f"Successfully processed google-mistral request {body.id}")
+        return response
+
+    except ValueError as e:
+        error_msg = str(e)
+        await logger.error(f"Validation error for google-mistral request {body.id}: {error_msg}")
+        raise HTTPException(status_code=400, detail=error_msg)
+    except Exception as e:
+        await logger.error(f"Internal error processing google-mistral request {body.id}: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")

@@ -1,3 +1,34 @@
+# ITMO University AI Assistant
+
+Intelligent assistant providing comprehensive and accurate information about ITMO University using advanced AI technologies.
+
+## Overview
+
+This project implements an AI-powered assistant that provides reliable and well-thought-out answers about ITMO University. By combining Google Search API and Mistral AI, the system ensures accurate, ethical, and university-aligned responses.
+
+### Key Features
+
+- **Bilingual Support**: Handles queries in both Russian and English
+- **Verified Information**: Uses official sources through targeted Google Search
+- **Ethical Response System**: Validates queries for appropriateness and relevance
+- **Source Transparency**: Provides links to information sources
+- **Smart Information Synthesis**: Combines data from multiple sources for comprehensive answers
+
+### Technology Stack
+
+- **Mistral AI**: 
+  - Query validation and ethics check
+  - Bilingual support (Russian/English)
+  - Information synthesis from multiple sources
+  - Response generation aligned with university values
+  
+- **Google Search API**: 
+  - Targeted search within official domains:
+    - *.itmo.ru/*
+    - *.minobrnauki.gov.ru/*
+  - Ensures information accuracy and reliability
+  - Real-time data from official sources
+
 # FastAPI Baseline Service
 Это пример базового приложения, которое реализует API для получения запроса и возврата ответа.
 Приложение написано на FastAPI, разворачивается при помощи docker-compose.
